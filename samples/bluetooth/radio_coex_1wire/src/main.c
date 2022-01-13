@@ -48,6 +48,15 @@ static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
 	BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
 };
+static bool state_granted;
+
+static void print_state(void)
+{
+	if (state_granted)
+		printk("Current state is: Grant every request\n");
+	else
+		printk("Current state is: Deny every request\n");
+}
 
 static void print_welcome_message(void)
 {
@@ -78,11 +87,15 @@ static void check_input(void)
 
 	if ((input_char == 'g') ^ APP_GRANT_ACTIVE_LOW) {
 		nrf_gpio_pin_set(APP_GRANT_GPIO_PIN);
+		state_granted = true;
 	} else if ((input_char == 'd') ^ APP_GRANT_ACTIVE_LOW) {
 		nrf_gpio_pin_clear(APP_GRANT_GPIO_PIN);
+		state_granted = false;
 	} else {
 		return;
 	}
+
+	print_state();
 }
 
 static void console_print_thread(void)
@@ -132,6 +145,7 @@ static void setup_grant_pin(void)
 	} else {
 		nrf_gpio_pin_set(APP_GRANT_GPIO_PIN);
 	}
+	state_granted = true;
 }
 
 void main(void)
